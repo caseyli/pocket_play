@@ -48,9 +48,25 @@ Open the app once while you're online. After that it works in airplane mode.
 
 ### Publish an update
 
+Installed copies only download new files when `VERSION` in `sw.js` changes (for example `'v1'` → `'v2'`). A Git hook bumps it for you.
+
+**One-time setup, per clone.** Turn on the hook:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+Then, for each update:
+
 1. Change the files you need to.
-2. In `sw.js`, bump `VERSION` (for example `'v1'` → `'v2'`). **If you skip this, installed copies keep the old files.**
-3. Commit and push. GitHub Pages redeploys in about a minute.
+2. Commit. If the commit touches app files (`index.html`, `manifest.json`, `sw.js`, `css/`, `js/`, `games/`, `icons/`), the hook bumps `VERSION` and adds that change to the same commit. You'll see `pre-commit: bumped sw.js VERSION v1 -> v2`.
+3. Push. GitHub Pages redeploys in about a minute.
+
+Notes:
+- Commits that only change docs (like this README or `.gitignore`) don't bump the version, so phones don't re-download for nothing.
+- If you change the `VERSION` line yourself in a commit, the hook leaves it alone.
+- `git commit --no-verify` skips the hook. If you use it for an app change, bump `VERSION` by hand.
+- If you don't see the "bumped" message after an app change, check that the setup command above was run in this clone.
 
 Phones download the new version the next time they open the app while online. If the app is on the picker screen, it reloads on its own. If a game is in progress, it waits until the child goes back to the picker.
 
@@ -74,4 +90,4 @@ icons/                app icons (icon.svg is the source)
    - `start(container, { audio, muted, hud })`: builds the game inside `container`. `hud` is the empty centre slot of the top bar, for a score.
    - `stop()`: removes all listeners, timers, animation frames and DOM.
 2. Add an entry to `GAMES` in `js/registry.js`.
-3. Add the new files to `PRECACHE` in `sw.js`, then bump `VERSION`.
+3. Add the new files to `PRECACHE` in `sw.js`. Otherwise they won't work offline. The hook bumps `VERSION` when you commit.

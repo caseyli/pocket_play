@@ -1,0 +1,44 @@
+#!/bin/sh
+# Bump VERSION in sw.js when a commit changes app files, so installed copies
+# fetch the new files. Enable once per clone:  git config core.hooksPath .githooks
+#
+# - Only commits touching app files bump (docs/.gitignore-only commits don't).
+# - If you changed the VERSION line yourself in this commit, it's left alone.
+# - Only the VERSION line is changed; other unstaged edits to sw.js are kept out of the commit.
+
+SW=sw.js
+APP_FILES='^(index\.html|manifest\.json|sw\.js|css/|js/|games/|icons/)'
+
+# Any app files staged (added, changed, renamed or deleted)?
+git diff --cached --name-only --diff-filter=ACMRD | grep -Eq "$APP_FILES" || exit 0
+
+# sw.js must be in the commit (or already committed).
+git cat-file -e ":$SW" 2>/dev/null || exit 0
+
+# VERSION already changed in this commit (or sw.js is new)? Respect it.
+if git diff --cached -U0 -- "$SW" | grep -Eq "^[+-]const VERSION"; then
+  exit 0
+fi
+
+current=$(git show ":$SW" | sed -n "s/^const VERSION = 'v\([0-9][0-9]*\)';.*/\1/p" | head -n 1)
+if [ -z "$current" ]; then
+  echo "pre-commit: couldn't find  const VERSION = 'vN';  in $SW." >&2
+  echo "Fix the line or bump it by hand, then commit again (or use --no-verify to skip)." >&2
+  exit 1
+fi
+next=$((current + 1))
+expr="s/^const VERSION = 'v$current';/const VERSION = 'v$next';/"
+
+# Update the staged copy of sw.js.
+blob=$(git show ":$SW" | sed "$expr" | git hash-object -w --stdin) || exit 1
+mode=$(git ls-files -s -- "$SW" | cut -d' ' -f1)
+git update-index --cacheinfo "$mode,$blob,$SW" || exit 1
+
+# Update the working copy too, so it matches what was committed.
+if [ -f "$SW" ]; then
+  tmp="$SW.tmp.$$"
+  sed "$expr" "$SW" > "$tmp" && cat "$tmp" > "$SW"
+  rm -f "$tmp"
+fi
+
+echo "pre-commit: bumped $SW VERSION v$current -> v$next"
