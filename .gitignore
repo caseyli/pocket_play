@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*~
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Node (only if you use `npx serve` or add tooling later)
+node_modules/
+npm-debug.log*
+
+# Logs and scratch files
+*.log
+.env
+.env.*
+
+# Design reference files. GitHub Pages publishes everything in the repo, and
+# prototype.html loads Google Fonts. Uncomment to keep them out of the published site.
+# prototype.html
+# SPEC.md

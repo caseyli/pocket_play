@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <title>Pocket Play</title>
+  <meta name="description" content="Simple, offline games for little hands.">
+  <meta name="theme-color" content="#dcefff">
+  <meta name="color-scheme" content="light">
+
+  <!-- PWA / install -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Pocket Play">
+  <meta name="format-detection" content="telephone=no">
+
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="modulepreload" href="js/audio.js">
+  <link rel="modulepreload" href="js/registry.js">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Game picker -->
+    <section id="home" class="screen">
+      <header class="home-top">
+        <div class="brand" aria-label="Pocket Play"><b>P</b><b>o</b><b>c</b><b>k</b><b>e</b><b>t</b> <b>P</b><b>l</b><b>a</b><b>y</b></div>
+        <button class="round mute" type="button" aria-label="Turn sound off" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1d2340" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="#1d2340"/>
+            <g class="waves"><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/></g>
+            <g class="x"><path d="M16 9.5l5 5M21 9.5l-5 5"/></g>
+          </svg>
+        </button>
+      </header>
+      <main class="home-main">
+        <p class="hello">Pick a game</p>
+        <div class="tiles" id="tiles"></div>
+      </main>
+    </section>
+
+    <!-- Game screen: the game module renders into #stage; the HUD sits on top. -->
+    <section id="game" class="screen" hidden>
+      <div id="stage" class="stage"></div>
+      <div class="hud">
+        <button class="round exit" id="exitBtn" type="button" aria-label="Hold to go back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1d2340" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg>
+          <svg class="ring" viewBox="0 0 62 62" aria-hidden="true"><circle id="ring" cx="31" cy="31" r="28.5"/></svg>
+        </button>
+        <div class="hud-center" id="hudCenter"></div>
+        <button class="round mute" type="button" aria-label="Turn sound off" aria-pressed="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1d2340" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="#1d2340"/>
+            <g class="waves"><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18.5 6.5a7.5 7.5 0 0 1 0 11"/></g>
+            <g class="x"><path d="M16 9.5l5 5M21 9.5l-5 5"/></g>
+          </svg>
+        </button>
+      </div>
+      <div class="hint" id="hint" role="status">Hold to go back</div>
+    </section>
+  </div>
+  <noscript><p style="padding:24px;font-size:20px">Pocket Play needs JavaScript turned on.</p></noscript>
+</body>
+</html>
