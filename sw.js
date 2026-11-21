@@ -1,7 +1,7 @@
 // Pocket Play service worker: cache-first, everything precached on install.
 // Bump VERSION whenever any app file changes, so phones pick up the new files.
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `pocket-play-${VERSION}`;
 
 // Paths are relative to this file, so the app works from any subpath (e.g. /pocket-play/).

@@ -8,7 +8,10 @@ const QUICK_TAP_MS = 400;  // shorter than this counts as a tap and shows the hi
 const RING_CIRC = 179;     // circumference of the exit ring (2 * PI * 28.5)
 
 const $ = (id) => document.getElementById(id);
-const home = $('home'), gameEl = $('game'), stage = $('stage'), hudCenter = $('hudCenter');
+const landing = $('landing'), home = $('home'), gameEl = $('game'), stage = $('stage'), hudCenter = $('hudCenter');
+
+// Launched from the home screen? Then skip the landing page and open straight to the picker.
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 const tiles = $('tiles'), exitBtn = $('exitBtn'), ring = $('ring'), hint = $('hint');
 
 let current = null;      // { id, mod } of the running game
@@ -108,9 +111,30 @@ function requestExit() {
   else closeGame();
 }
 
-// Android back button / browser back: return to the picker instead of leaving the app.
+// ---------- Landing ----------
+// History stack in a browser tab: landing (base) -> { view: 'picker' } -> { game }.
+// From the home screen the base entry is the picker itself.
+function showMenuView() {
+  const s = history.state || {};
+  const showLanding = !standalone && s.view !== 'picker';
+  landing.hidden = !showLanding;
+  home.hidden = showLanding;
+  if (showLanding) landing.scrollTop = 0;
+}
+
+document.querySelectorAll('[data-start]').forEach((b) =>
+  b.addEventListener('click', () => {
+    audio.init();
+    history.pushState({ view: 'picker' }, '');
+    showMenuView();
+  })
+);
+
+// Android back button / browser back: step back one screen (game -> picker -> landing).
 window.addEventListener('popstate', () => {
-  if (current && !(history.state && history.state.game)) closeGame();
+  const inGame = history.state && history.state.game;
+  if (current && !inGame) closeGame();
+  if (!inGame) showMenuView();
 });
 
 // ---------- Hold-to-exit ----------
@@ -186,6 +210,7 @@ if ('serviceWorker' in navigator) {
 
 // ---------- Boot ----------
 // If the page was reloaded while a game entry was on the history stack, start on the picker.
-if (history.state && history.state.game) history.replaceState(null, '');
+if (history.state && history.state.game) history.replaceState({ view: 'picker' }, '');
 renderTiles();
 syncMute();
+showMenuView();

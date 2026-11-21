@@ -4,7 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <title>Pocket Play</title>
-  <meta name="description" content="Simple, offline games for little hands.">
+  <meta name="description" content="Simple, happy games for little hands. No ads, no accounts, no competitions, and it works offline.">
+
+  <!-- Link previews (Messages, WhatsApp, Slack, Facebook, X...). Image URLs must be absolute. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Pocket Play">
+  <meta property="og:title" content="Pocket Play: simple, happy games for little hands">
+  <meta property="og:description" content="No ads, no accounts, no competitions. Hand your phone to your child without worrying what they'll tap next. Works offline.">
+  <meta property="og:url" content="https://caseyli.github.io/pocket_play/">
+  <meta property="og:image" content="https://caseyli.github.io/pocket_play/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Pocket Play: colourful cartoon dots with eyes being connected on a game board">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://caseyli.github.io/pocket_play/">
   <meta name="theme-color" content="#dcefff">
   <meta name="color-scheme" content="light">
 
@@ -26,8 +40,59 @@
 </head>
 <body>
   <div id="app">
+    <!-- Landing page (for grown-ups). Skipped when launched from the home screen. -->
+    <section id="landing" class="screen landing" hidden>
+      <div class="landing-inner">
+        <header class="hero">
+          <h1 class="brand brand-lg" aria-label="Pocket Play"><b>P</b><b>o</b><b>c</b><b>k</b><b>e</b><b>t</b> <b>P</b><b>l</b><b>a</b><b>y</b></h1>
+          <svg class="hero-art" viewBox="0 0 220 60" aria-hidden="true">
+            <path d="M70 32 H150" stroke="#3A86FF" stroke-width="9" stroke-linecap="round"/>
+            <g class="bob"><circle cx="30" cy="32" r="17" fill="#FF4D6D"/><circle cx="24" cy="29" r="4.5" fill="#fff"/><circle cx="36" cy="29" r="4.5" fill="#fff"/><circle cx="25" cy="30" r="2.2" fill="#1d2340"/><circle cx="37" cy="30" r="2.2" fill="#1d2340"/></g>
+            <g class="bob"><circle cx="70" cy="32" r="17" fill="#3A86FF"/><path d="M60.5 30.5a4 4 0 0 1 7 0M72.5 30.5a4 4 0 0 1 7 0" stroke="#1d2340" stroke-width="2.4" stroke-linecap="round" fill="none"/></g>
+            <g class="bob"><circle cx="110" cy="32" r="17" fill="#3A86FF"/><path d="M100.5 30.5a4 4 0 0 1 7 0M112.5 30.5a4 4 0 0 1 7 0" stroke="#1d2340" stroke-width="2.4" stroke-linecap="round" fill="none"/></g>
+            <g class="bob"><circle cx="150" cy="32" r="17" fill="#3A86FF"/><path d="M140.5 30.5a4 4 0 0 1 7 0M152.5 30.5a4 4 0 0 1 7 0" stroke="#1d2340" stroke-width="2.4" stroke-linecap="round" fill="none"/></g>
+            <g class="bob"><circle cx="190" cy="32" r="17" fill="#FFC93C"/><circle cx="184" cy="29" r="4.5" fill="#fff"/><circle cx="196" cy="29" r="4.5" fill="#fff"/><circle cx="183" cy="30" r="2.2" fill="#1d2340"/><circle cx="195" cy="30" r="2.2" fill="#1d2340"/></g>
+          </svg>
+          <p class="tagline">Simple, happy games for little hands.</p>
+          <button class="start-btn" type="button" data-start>
+            Start playing
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+          </button>
+        </header>
+
+        <section class="about" aria-labelledby="aboutTitle">
+          <h2 id="aboutTitle">What is Pocket Play?</h2>
+          <p class="about-intro">A small collection of calm, cheerful games you can hand to your child on your phone, without worrying about what they'll tap next.</p>
+          <ul class="features">
+            <li class="feature" style="--c:#FF4D6D">
+              <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01" stroke-width="3"/></svg></span>
+              <div><h3>Made for kids</h3><p>Big buttons, bright colours and almost no reading. There's no losing, so it's never frustrating.</p></div>
+            </li>
+            <li class="feature" style="--c:#3A86FF">
+              <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg></span>
+              <div><h3>No ads</h3><p>No ads, no purchases and no links out of the app. Nothing to tap that leads somewhere else.</p></div>
+            </li>
+            <li class="feature" style="--c:#E0A800">
+              <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 4M17 6h2.5a2.5 2.5 0 0 1-2.6 4M12 14v3M8.5 20h7"/></svg></span>
+              <div><h3>No competitions</h3><p>No leaderboards, timers or lives to lose. Kids play at their own pace, just for fun.</p></div>
+            </li>
+            <li class="feature" style="--c:#2EC27E">
+              <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg></span>
+              <div><h3>No accounts</h3><p>No sign-up and no tracking. Nothing about your child ever leaves your phone.</p></div>
+            </li>
+            <li class="feature" style="--c:#9D4EDD">
+              <span class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.5 5.2 5.7.7-4.2 3.9 1.1 5.6L12 16.1l-5.1 2.8 1.1-5.6-4.2-3.9 5.7-.7z"/></svg></span>
+              <div><h3>Favourite games, made simple</h3><p>Simplified versions of the games you know, sized for small fingers.</p></div>
+            </li>
+          </ul>
+          <p class="install-tip">Tip: add Pocket Play to your home screen and it works offline, even in airplane mode.</p>
+          <button class="start-btn start-btn-alt" type="button" data-start>Start playing</button>
+        </section>
+      </div>
+    </section>
+
     <!-- Game picker -->
-    <section id="home" class="screen">
+    <section id="home" class="screen" hidden>
       <header class="home-top">
         <div class="brand" aria-label="Pocket Play"><b>P</b><b>o</b><b>c</b><b>k</b><b>e</b><b>t</b> <b>P</b><b>l</b><b>a</b><b>y</b></div>
         <button class="round mute" type="button" aria-label="Turn sound off" aria-pressed="false">

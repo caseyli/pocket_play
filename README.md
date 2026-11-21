@@ -82,7 +82,14 @@ js/registry.js        list of games
 js/audio.js           synthesised sounds (Web Audio)
 games/dots/           Dot Pop: dots.js (logic + rendering), dots.css, themes.js (worlds, MILESTONE)
 icons/                app icons (icon.svg is the source)
+og-image.png          1200×630 image shown when the link is shared
 ```
+
+## Link previews
+
+When the link is shared (Messages, WhatsApp, Slack and so on), the preview comes from the `og:` tags in `index.html` and `og-image.png`. Those tags must use full addresses, and they're set to `https://caseyli.github.io/pocket_play/`. If the site moves to another address (for example a custom domain), update `og:url`, `og:image` and the `canonical` link.
+
+Apps cache previews, so after you change the image, a link you've already shared may keep the old preview for a while.
 
 ## Add a game
 
