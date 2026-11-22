@@ -2,6 +2,7 @@
 // Module interface: start(container, { audio, muted, hud }) and stop().
 
 import { buzz } from '../../js/audio.js';
+import { DOT_COLORS, drawCharacter, idleLook, lookToward } from '../../js/characters.js';
 import { MILESTONE, THEMES, spawnShapes, updateShapes, drawShape, drawStar } from './themes.js';
 
 // ---------- Tunables ----------
@@ -10,19 +11,12 @@ const G = 55;           // gravity, rows per second^2
 const POP_GAP = 0.06;   // seconds between pops along a chain
 const IDLE_MS = 4000;   // wiggle dots after this long without touch
 const SHUFFLE_S = 0.75; // shuffle-away duration
-const COLORS = [
-  { fill: '#FF4D6D', light: '#FF9DB0', dark: '#C9184A' }, // red
-  { fill: '#3A86FF', light: '#8DBBFF', dark: '#1D4ED8' }, // blue
-  { fill: '#FFC93C', light: '#FFE9A0', dark: '#D99A00' }, // yellow
-  { fill: '#2EC27E', light: '#86E6B9', dark: '#138A55' }, // green
-  { fill: '#9D4EDD', light: '#CFA6F2', dark: '#6A1FB0' }, // purple
-];
+const COLORS = DOT_COLORS;  // the shared character colours
 const BIG_CHAINS = [ // checked in order; first match wins
   { min: 10, word: 'WOW!',     shake: 14, cheer: true, buzz: [30, 40, 60] },
   { min: 8,  word: 'Awesome!', shake: 9,  cheer: true, buzz: 40 },
   { min: 5,  word: 'Great!',   shake: 5,  cheer: false, buzz: 25 },
 ];
-const INK = '#1d2340';
 const STAR_PATH = 'M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.5l1.3-6.6L2.5 9.3l6.6-.8z';
 
 let game = null; // the running instance, if any
@@ -278,7 +272,7 @@ function createGame(container, { audio, hud }) {
 
   function floatWord(text, color) {
     const el = document.createElement('div');
-    el.className = 'dots-word';
+    el.className = 'float-word';
     el.textContent = text;
     el.style.color = color;
     el.style.top = boardOff.y + size * 0.42 + 'px';
@@ -431,7 +425,6 @@ function createGame(container, { audio, hud }) {
   }
 
   function drawDot(x, y, R, d, selected, t, shuffleK) {
-    const col = COLORS[d.color];
     let sx = 1, sy = 1, rot = 0, alpha = 1;
     if (selected) sx = sy = 1.1;
     if (d.sel > 0) { const b = 1 + 0.3 * d.sel * Math.sin((1 - d.sel) * Math.PI * 3); sx *= b; sy *= 2 - b; } // boing
@@ -439,47 +432,14 @@ function createGame(container, { audio, hud }) {
     if (d.wiggle > 0) rot = Math.sin(d.wiggle * 18) * 0.35 * d.wiggle;
     if (d.popping) { sx = sy = 1 + d.pop * 0.6; alpha = 1 - d.pop; }
     if (shuffleK) { sx = sy = 1 - shuffleK; rot = shuffleK * 9 * d.spin; }
-    if (alpha <= 0 || sx <= 0.01) return;
-
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    if (!d.popping && !shuffleK) { // shadow
-      ctx.fillStyle = 'rgba(20,30,60,.13)';
-      ctx.beginPath(); ctx.ellipse(x, y + R * 0.92, R * 0.78 * sx, R * 0.2, 0, 0, 7); ctx.fill();
-    }
-    ctx.translate(x, y + R * (1 - sy));
-    ctx.rotate(rot);
-    ctx.scale(sx, sy);
-
-    // body
-    const g = ctx.createRadialGradient(-R * 0.35, -R * 0.4, R * 0.1, 0, 0, R * 1.05);
-    g.addColorStop(0, col.light); g.addColorStop(0.55, col.fill); g.addColorStop(1, col.dark);
-    ctx.fillStyle = g;
-    ctx.beginPath(); ctx.arc(0, 0, R, 0, 7); ctx.fill();
-    if (selected) { ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = R * 0.12; ctx.stroke(); }
-
-    // eyes
-    const ex = R * 0.34, ey = -R * 0.08, er = R * 0.25;
-    if (selected || d.popping) { // happy ^ ^
-      ctx.strokeStyle = INK; ctx.lineWidth = R * 0.13; ctx.lineCap = 'round';
-      for (const s of [-1, 1]) { ctx.beginPath(); ctx.arc(s * ex, ey + er * 0.35, er * 0.62, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); }
-    } else {
-      let lx = Math.sin(t * 0.6 + d.ph) * 0.5, ly = Math.cos(t * 0.45 + d.ph) * 0.3; // idle drift
-      if (pointer) { // look at the finger
-        const dx = pointer.x - x, dy = pointer.y - y, m = Math.hypot(dx, dy) || 1;
-        lx = dx / m; ly = dy / m;
-      }
-      const open = d.blinkT < 0.13 ? 0.12 : 1;
-      for (const s of [-1, 1]) {
-        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(s * ex, ey, er, er * open, 0, 0, 7); ctx.fill();
-        if (open > 0.5) {
-          const px = s * ex + lx * er * 0.42, py = ey + ly * er * 0.42;
-          ctx.fillStyle = INK; ctx.beginPath(); ctx.arc(px, py, er * 0.52, 0, 7); ctx.fill();
-          ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(px - er * 0.18, py - er * 0.2, er * 0.16, 0, 7); ctx.fill();
-        }
-      }
-    }
-    ctx.restore();
+    drawCharacter(ctx, x, y, R, {
+      color: COLORS[d.color], sx, sy, rot, alpha,
+      shadow: !d.popping && !shuffleK,
+      outline: selected,
+      mood: selected || d.popping ? 'happy' : 'normal',
+      look: pointer ? lookToward(x, y, pointer.x, pointer.y) : idleLook(t, d.ph), // follow the finger while dragging
+      open: d.blinkT < 0.13 ? 0.12 : 1,
+    });
   }
 
   // ---------- Loop ----------

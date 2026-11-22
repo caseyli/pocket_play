@@ -18,6 +18,24 @@ const dotsArt = `
   ${dot(30, 40, '#2EC27E')}
 </svg>`;
 
+const kartArt = `
+<svg viewBox="0 0 120 100" aria-hidden="true">
+  <rect x="99" y="10" width="17" height="46" rx="7" fill="#2b2f45"/>
+  <circle cx="107.5" cy="20" r="5" fill="#5a5f78"/><circle cx="107.5" cy="33" r="5" fill="#5a5f78"/>
+  <circle cx="107.5" cy="46" r="5.5" fill="#2EC27E"/>
+  <path d="M8 62h14M4 72h16M10 82h12" stroke="#b9d4ee" stroke-width="4" stroke-linecap="round"/>
+  <g class="bob">
+    <rect x="27" y="68" width="15" height="21" rx="5" fill="#2b2f45"/><rect x="78" y="68" width="15" height="21" rx="5" fill="#2b2f45"/>
+    <rect x="33" y="57" width="54" height="26" rx="9" fill="#FF4D6D"/>
+    <rect x="35" y="51" width="50" height="6" rx="3" fill="#C9184A"/>
+    <rect x="30" y="78" width="60" height="7" rx="3.5" fill="#3a3f5a"/>
+    <circle cx="44" cy="70" r="3.5" fill="#ff3b3b"/><circle cx="76" cy="70" r="3.5" fill="#ff3b3b"/>
+    <circle cx="60" cy="34" r="17" fill="#FF4D6D"/>
+    <circle cx="54" cy="31" r="4.5" fill="#fff"/><circle cx="66" cy="31" r="4.5" fill="#fff"/>
+    <circle cx="54" cy="29" r="2.3" fill="#1d2340"/><circle cx="66" cy="29" r="2.3" fill="#1d2340"/>
+  </g>
+</svg>`;
+
 export const GAMES = [
   {
     id: 'dots',
@@ -25,5 +43,12 @@ export const GAMES = [
     art: dotsArt,
     module: new URL('../games/dots/dots.js', import.meta.url).href,
     styles: new URL('../games/dots/dots.css', import.meta.url).href,
+  },
+  {
+    id: 'kart',
+    name: 'Dot Dash',
+    art: kartArt,
+    module: new URL('../games/kart/kart.js', import.meta.url).href,
+    styles: new URL('../games/kart/kart.css', import.meta.url).href,
   },
 ];

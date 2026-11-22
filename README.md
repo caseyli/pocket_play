@@ -79,8 +79,10 @@ sw.js                 service worker: precache list + VERSION
 css/app.css           shell styles
 js/app.js             view switching, hold-to-exit, back button, mute, SW registration
 js/registry.js        list of games
-js/audio.js           synthesised sounds (Web Audio)
+js/audio.js           synthesised sounds (Web Audio), incl. the kart engine hum
+js/characters.js      the dot characters every game uses: colours, faces, moods
 games/dots/           Dot Pop: dots.js (logic + rendering), dots.css, themes.js (worlds, MILESTONE)
+games/kart/           Dot Dash: kart.js (driving, lights, rendering), kart.css, track.js (track, worlds, tunables)
 icons/                app icons (icon.svg is the source)
 og-image.png          1200×630 image shown when the link is shared
 ```
@@ -95,6 +97,7 @@ Apps cache previews, so after you change the image, a link you've already shared
 
 1. Create `games/<id>/` with a module that exports:
    - `start(container, { audio, muted, hud })`: builds the game inside `container`. `hud` is the empty centre slot of the top bar, for a score.
-   - `stop()`: removes all listeners, timers, animation frames and DOM.
+   - `stop()`: removes all listeners, timers, animation frames, sounds and DOM.
+   Draw the characters with `drawCharacter()` from `js/characters.js`, so every game uses the same cast.
 2. Add an entry to `GAMES` in `js/registry.js`.
 3. Add the new files to `PRECACHE` in `sw.js`. Otherwise they won't work offline. The hook bumps `VERSION` when you commit.

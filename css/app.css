@@ -107,10 +107,10 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 .exit{position:relative}
 .exit .ring{position:absolute;inset:-5px;width:62px;height:62px;pointer-events:none;transform:rotate(-90deg)}
 .exit .ring circle{fill:none;stroke:#FF4D6D;stroke-width:5;stroke-linecap:round;stroke-dasharray:179;stroke-dashoffset:179}
-.hint{position:absolute;z-index:7;left:max(16px,var(--safe-l));top:calc(var(--hud-h) + 2px);background:var(--ink);color:#fff;
+.exit-hint{position:absolute;z-index:7;left:max(16px,var(--safe-l));top:calc(var(--hud-h) + 2px);background:var(--ink);color:#fff;
   font-size:16px;font-weight:500;padding:8px 14px;border-radius:14px;opacity:0;transform:translateY(-6px);
   transition:opacity .2s,transform .2s;pointer-events:none}
-.hint.show{opacity:1;transform:none}
+.exit-hint.show{opacity:1;transform:none}
 
 /* Shared HUD score pill (games build the markup). */
 .hud-score{background:#fff;border-radius:999px;padding:8px 18px 10px;min-width:120px;text-align:center;
@@ -122,7 +122,23 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 .hud-meter{width:84px;height:7px;border-radius:9px;background:#e9edf5;overflow:hidden}
 .hud-meter i{display:block;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,#FFC93C,#FF4D6D);transition:width .25s}
 
+/* Shared big floating word ("Great!", "Go!"). Games set color and top. */
+.float-word{position:absolute;left:50%;white-space:nowrap;font-weight:700;font-size:clamp(38px,12vw,68px);
+  color:#fff;-webkit-text-stroke:5px var(--ink);paint-order:stroke fill;letter-spacing:.02em;pointer-events:none;
+  animation:wordUp 1.25s cubic-bezier(.2,.8,.3,1) forwards}
+@keyframes wordUp{
+  0%{transform:translate(-50%,-30%) scale(.2) rotate(-10deg);opacity:0}
+  22%{transform:translate(-50%,-50%) scale(1.18) rotate(4deg);opacity:1}
+  40%{transform:translate(-50%,-50%) scale(1) rotate(-2deg);opacity:1}
+  75%{opacity:1}
+  100%{transform:translate(-50%,-140%) scale(.95) rotate(0);opacity:0}}
+@keyframes wordFade{
+  0%{transform:translate(-50%,-50%);opacity:0}
+  15%,75%{transform:translate(-50%,-50%);opacity:1}
+  100%{transform:translate(-50%,-50%);opacity:0}}
+
 @media (prefers-reduced-motion:reduce){
   .tile .bob,.hero-art .bob,.start-btn{animation:none}
   .hud-score.bump .hud-score-num{animation:none}
+  .float-word{animation-name:wordFade}
 }

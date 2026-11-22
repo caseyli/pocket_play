@@ -1,0 +1,63 @@
+/* Dot Dash. Layout: full-screen road canvas; traffic light hangs in the sky; huge Stop/Go buttons at the bottom. */
+.kart{position:absolute;inset:0;overflow:hidden;touch-action:none;background:#7cc8ff}
+.kart-canvas{position:absolute;inset:0;display:block}
+.kart-words{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+
+/* Soft glow round the screen edge in the light's colour, so it can't be missed. */
+.kart-glow{position:absolute;inset:0;pointer-events:none;z-index:2;transition:box-shadow .35s}
+.kart-glow[data-light=green]{box-shadow:inset 0 0 0 5px rgba(46,194,126,.6),inset 0 0 50px rgba(46,194,126,.35)}
+.kart-glow[data-light=yellow]{box-shadow:inset 0 0 0 5px rgba(255,201,60,.75),inset 0 0 50px rgba(255,201,60,.4)}
+.kart-glow[data-light=red]{box-shadow:inset 0 0 0 5px rgba(255,77,109,.7),inset 0 0 50px rgba(255,77,109,.38)}
+.kart-glow.moving-on-red{animation:kartGlow .7s ease-in-out infinite alternate}
+@keyframes kartGlow{to{box-shadow:inset 0 0 0 9px rgba(255,77,109,.9),inset 0 0 90px rgba(255,77,109,.55)}}
+
+/* ---------- Traffic light ---------- */
+.kart-light{position:absolute;z-index:3;left:50%;top:calc(var(--hud-h) + 6px);transform:translateX(-50%);
+  display:flex;flex-direction:column;gap:7px;padding:9px;border-radius:24px;background:#2b2f45;
+  box-shadow:0 6px 0 #1d2340,0 14px 26px rgba(20,30,70,.3)}
+.lamp{display:block;width:44px;height:44px;border-radius:50%;background:#454a63;box-shadow:inset 0 -4px 0 rgba(0,0,0,.25);
+  transition:background .15s,box-shadow .15s}
+.kart-light[data-light=red] .lamp-red{background:#FF4D6D;box-shadow:0 0 22px 4px rgba(255,77,109,.85),inset 0 -4px 0 rgba(0,0,0,.15)}
+.kart-light[data-light=yellow] .lamp-yellow{background:#FFC93C;box-shadow:0 0 22px 4px rgba(255,201,60,.85),inset 0 -4px 0 rgba(0,0,0,.12)}
+.kart-light[data-light=green] .lamp-green{background:#2EC27E;box-shadow:0 0 22px 4px rgba(46,194,126,.85),inset 0 -4px 0 rgba(0,0,0,.15)}
+.kart-light.remind{animation:kartWobble .6s ease-in-out}
+@keyframes kartWobble{
+  0%,100%{transform:translateX(-50%) rotate(0)}20%{transform:translateX(-50%) rotate(-7deg) scale(1.08)}
+  40%{transform:translateX(-50%) rotate(6deg) scale(1.08)}60%{transform:translateX(-50%) rotate(-4deg)}80%{transform:translateX(-50%) rotate(2deg)}}
+.kart.picking .kart-light,.kart.picking .kart-glow{display:none}
+
+/* ---------- Stop / Go ---------- */
+/* The button itself is never clipped (Chrome can drop clipped+animated elements); the shapes are inner spans. */
+.kart-controls{position:absolute;z-index:4;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:flex-end;
+  padding:0 max(22px,var(--safe-r)) max(22px,calc(var(--safe-b) + 10px)) max(22px,var(--safe-l));pointer-events:none}
+.kart-btn{pointer-events:auto;position:relative;width:min(38vw,150px);aspect-ratio:1;border:0;padding:0;cursor:pointer;
+  background:none;color:#fff;font-weight:700;font-size:clamp(26px,8vw,34px);letter-spacing:.03em;touch-action:none;
+  -webkit-user-select:none;user-select:none;transition:transform .08s}
+.kart-btn::before{content:'';position:absolute;inset:0;transform:translateY(7px);background:rgba(20,30,70,.28)}
+.kart-btn .ring{position:absolute;inset:0;background:#fff}
+.kart-btn .face{position:absolute;inset:7px;display:flex;align-items:center;justify-content:center;gap:4px}
+.kart-btn svg{width:.8em;height:.8em}
+.kart-stop::before,.kart-stop .ring,.kart-stop .face{clip-path:polygon(29.3% 0,70.7% 0,100% 29.3%,100% 70.7%,70.7% 100%,29.3% 100%,0 70.7%,0 29.3%)}
+.kart-stop .face{background:linear-gradient(180deg,#ff6b84,#e8355a)}
+.kart-go::before,.kart-go .ring,.kart-go .face{border-radius:50%}
+.kart-go .face{background:linear-gradient(180deg,#4fd895,#22a868)}
+.kart-btn.down{transform:translateY(5px) scale(.94)}
+.kart-btn.down::before{transform:translateY(2px)}
+.kart-btn.down .face{filter:brightness(.9)}
+.kart-btn.kart-nudge{animation:kartPulse 1s ease-in-out infinite}
+@keyframes kartPulse{50%{transform:scale(1.09)}}
+
+/* ---------- Driver picker ---------- */
+.kart-pick{position:absolute;inset:var(--hud-h) 0 0 0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  padding:10px 18px calc(24px + var(--safe-b));background:rgba(220,239,255,.55)}
+.kart-pick-title{margin:0;padding:8px 22px;border-radius:999px;background:#fff;font-size:26px;font-weight:700;
+  box-shadow:0 5px 0 rgba(29,35,64,.12)}
+.kart-pick-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;max-width:440px}
+.kart-pick-btn{width:min(27vw,118px);aspect-ratio:1;border:0;padding:0;border-radius:28px;background:#fff;cursor:pointer;
+  box-shadow:0 7px 0 var(--tile-edge),0 14px 24px rgba(29,60,110,.16);transition:transform .12s,box-shadow .12s}
+.kart-pick-btn:active{transform:translateY(5px);box-shadow:0 2px 0 var(--tile-edge),0 6px 12px rgba(29,60,110,.16)}
+.kart-pick-btn canvas{display:block;width:100%;height:100%}
+
+@media (prefers-reduced-motion:reduce){
+  .kart-btn.kart-nudge,.kart-light.remind,.kart-glow.moving-on-red{animation:none}
+}

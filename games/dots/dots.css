@@ -14,21 +14,7 @@
 .dots-board{display:block;touch-action:none}
 
 .dots-words{position:absolute;inset:0;pointer-events:none;z-index:6;overflow:hidden}
-.dots-word{position:absolute;left:50%;white-space:nowrap;font-weight:700;font-size:clamp(38px,12vw,68px);
-  color:#fff;-webkit-text-stroke:5px var(--ink);paint-order:stroke fill;letter-spacing:.02em;
-  animation:dotsWordUp 1.25s cubic-bezier(.2,.8,.3,1) forwards}
-@keyframes dotsWordUp{
-  0%{transform:translate(-50%,-30%) scale(.2) rotate(-10deg);opacity:0}
-  22%{transform:translate(-50%,-50%) scale(1.18) rotate(4deg);opacity:1}
-  40%{transform:translate(-50%,-50%) scale(1) rotate(-2deg);opacity:1}
-  75%{opacity:1}
-  100%{transform:translate(-50%,-140%) scale(.95) rotate(0);opacity:0}}
-@keyframes dotsWordFade{
-  0%{transform:translate(-50%,-50%);opacity:0}
-  15%,75%{transform:translate(-50%,-50%);opacity:1}
-  100%{transform:translate(-50%,-50%);opacity:0}}
 
 @media (prefers-reduced-motion:reduce){
   .dots-bg{transition:none}
-  .dots-word{animation-name:dotsWordFade}
 }

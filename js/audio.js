@@ -98,6 +98,67 @@ class Audio {
   swoosh() { this.tone(900, 0.45, 'triangle', 0.08, 0, 160); this.tone(300, 0.5, 'sine', 0.08, 0.35, 700); }
   /** Little "blip" used to confirm unmuting. */
   blip() { this.connect(4); }
+
+  // ---- Traffic lights, stars, karts ----
+  lightGreen() { this.tone(noteFreq(5), 0.16, 'triangle', 0.14); this.tone(noteFreq(9), 0.3, 'triangle', 0.15, 0.12); }
+  lightYellow() { this.tone(noteFreq(7), 0.35, 'sine', 0.12); this.tone(noteFreq(7) * 2, 0.15, 'sine', 0.03); }
+  lightRed() { this.tone(noteFreq(7), 0.2, 'triangle', 0.13); this.tone(noteFreq(2), 0.35, 'triangle', 0.13, 0.16); }
+  /** Gentle "stop, stop!" reminder: two soft low boops. Never harsh. */
+  remind() { this.tone(330, 0.14, 'sine', 0.12); this.tone(262, 0.2, 'sine', 0.12, 0.18); }
+  /** Sparkly arpeggio for earning a star. */
+  star() { [7, 9, 10, 12].forEach((s, k) => this.tone(noteFreq(s), 0.16, 'triangle', 0.12, k * 0.06)); this.tone(noteFreq(14), 0.4, 'sine', 0.06, 0.24); }
+  /** Little tyre squeak. */
+  squeak() { this.tone(1400, 0.16, 'sine', 0.035, 0, 900); }
+
+  /**
+   * A continuous, soft engine hum. Returns { set(speed01), stop() }.
+   * Respects mute; restarts itself if it was silenced by stopAll() or muting.
+   */
+  engine() {
+    let nodes = null, stopped = false;
+    const build = () => {
+      const c = this.ctx;
+      const out = c.createGain(); out.gain.value = 0.0001;
+      const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; lp.Q.value = 0.7;
+      const o1 = c.createOscillator(); o1.type = 'triangle';
+      const o2 = c.createOscillator(); o2.type = 'sawtooth';
+      const o2g = c.createGain(); o2g.gain.value = 0.25; // a little grit, filtered soft
+      const lfo = c.createOscillator(); lfo.type = 'sine';
+      const lfoG = c.createGain(); lfoG.gain.value = 4;
+      lfo.connect(lfoG); lfoG.connect(o1.frequency); lfoG.connect(o2.frequency);
+      o1.connect(lp); o2.connect(o2g).connect(lp); lp.connect(out).connect(this.master);
+      const oscs = [o1, o2, lfo];
+      const n = { out, lp, o1, o2, lfo, oscs };
+      oscs.forEach((o) => {
+        o.start();
+        this._voices.add(o);
+        o.onended = () => { this._voices.delete(o); if (nodes === n) kill(); }; // e.g. silenced by stopAll()
+      });
+      return n;
+    };
+    const kill = () => {
+      if (!nodes) return;
+      const n = nodes; nodes = null;
+      n.oscs.forEach((o) => { try { o.stop(); } catch (e) {} });
+      try { n.out.disconnect(); } catch (e) {}
+    };
+    return {
+      set: (v) => {
+        if (stopped || !this.ctx || this.ctx.state === 'closed') return;
+        if (this._muted) { kill(); return; }
+        if (!nodes) nodes = build();
+        const t = this.ctx.currentTime;
+        v = Math.max(0, Math.min(1, v));
+        const f = 55 + v * 85;
+        nodes.o1.frequency.setTargetAtTime(f, t, 0.08);
+        nodes.o2.frequency.setTargetAtTime(f * 1.005, t, 0.08);
+        nodes.lfo.frequency.setTargetAtTime(7 + v * 9, t, 0.1);
+        nodes.lp.frequency.setTargetAtTime(380 + v * 700, t, 0.1);
+        nodes.out.gain.setTargetAtTime(0.018 + v * 0.05, t, 0.08);
+      },
+      stop: () => { stopped = true; kill(); },
+    };
+  }
 }
 
 export const audio = new Audio();
