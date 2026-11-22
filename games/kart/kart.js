@@ -1,5 +1,6 @@
 // Dot Dash: a very simple kart game for 2-4 year olds.
-// One looping track, behind-the-kart view, the kart steers itself. Two controls: Go and Stop.
+// Pick a driver, pick a course, drive one lap. Behind-the-kart view; the kart steers itself.
+// Two controls: Go and Stop.
 // Green light: hold Go. Red light: hold Stop until the kart stops. There is no losing.
 // Module interface: start(container, { audio, muted, hud }) and stop().
 
@@ -7,8 +8,8 @@ import { buzz } from '../../js/audio.js';
 import { DOT_COLORS, INK, drawCharacter, idleLook, lookToward } from '../../js/characters.js';
 import {
   SEG_LEN, ROAD_W, LANES, DRAW_DIST, CAM_H, MAX_SPEED, ACCEL, COAST, BRAKE,
-  GREEN_DRIVE_S, YELLOW_S, RED_HOLD_S, REMIND_AFTER_S, LAPS_PER_WORLD, FRIENDS,
-  buildTrack, WORLDS, drawSprite, drawGate,
+  GREEN_DRIVE_S, YELLOW_S, RED_HOLD_S, REMIND_AFTER_S, FRIENDS,
+  buildTrack, COURSES, drawSprite, drawGate, drawCoursePreview,
 } from './track.js';
 
 const DEPTH = 0.84;           // camera depth (about a 100 degree field of view)
@@ -18,6 +19,7 @@ const SPRITE_W = 700;         // base scenery width, world units
 const FRIEND_LANE = 0.64;     // friends drive in the side lanes (fraction of half-width)
 const START_RED_S = 1.6;      // red light before the very first green
 const GO_HINT_S = 3;          // pulse the Go button after this long parked on green
+const FINISH_CARD_S = 6;      // the "Congrats!" card stays this long (or until tapped), then back to the start
 const STAR_PATH = 'M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.5l1.3-6.6L2.5 9.3l6.6-.8z';
 
 let game = null;
@@ -61,6 +63,18 @@ function createGame(container, { audio, hud }) {
     <div class="kart-pick">
       <p class="kart-pick-title">Who's driving?</p>
       <div class="kart-pick-grid"></div>
+    </div>
+    <div class="kart-pick kart-courses" hidden>
+      <p class="kart-pick-title">Where to?</p>
+      <div class="kart-course-grid"></div>
+    </div>
+    <div class="kart-pick kart-finish" hidden>
+      <button class="kart-finish-card" type="button" aria-label="Play again">
+        <canvas class="kart-finish-face"></canvas>
+        <span class="kart-finish-title">Congrats!</span>
+        <span class="kart-finish-text">You finished the course!</span>
+        <span class="kart-finish-stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="${STAR_PATH}" fill="#FFC93C" stroke="#E0A800" stroke-width="1.5" stroke-linejoin="round"/></svg><b>0</b></span>
+      </button>
     </div>`;
   container.appendChild(root);
 
@@ -71,6 +85,9 @@ function createGame(container, { audio, hud }) {
   const controls = root.querySelector('.kart-controls');
   const goBtn = root.querySelector('.kart-go'), stopBtn = root.querySelector('.kart-stop');
   const pickEl = root.querySelector('.kart-pick'), pickGrid = root.querySelector('.kart-pick-grid');
+  const coursesEl = root.querySelector('.kart-courses'), courseGrid = root.querySelector('.kart-course-grid');
+  const finishEl = root.querySelector('.kart-finish'), finishCard = root.querySelector('.kart-finish-card');
+  const finishFace = root.querySelector('.kart-finish-face'), finishStars = root.querySelector('.kart-finish-stars b');
 
   const scorePill = document.createElement('div');
   scorePill.className = 'hud-score';
@@ -81,15 +98,23 @@ function createGame(container, { audio, hud }) {
   const scoreNum = scorePill.querySelector('span'), meter = scorePill.querySelector('i');
 
   // ---------- State ----------
-  const segs = buildTrack();
-  const N = segs.length, L = N * SEG_LEN;
+  let courseIdx = 0, segs = [], N = 0, L = 1;
+  function loadCourse(i) {
+    courseIdx = i;
+    segs = buildTrack(COURSES[i]);
+    N = segs.length; L = N * SEG_LEN;
+    carSegs = [];
+    skyGradKey = '';
+  }
   const GATE_Z = 2 * SEG_LEN;
   let W = 0, H = 0, dpr = 1, K = 1, horizonY = 0, kartY = 0, kartDz = 500;
-  let phase = 'pick', driver = 0, worldIdx = 0, stars = 0, laps = 0;
+  // phase: 'pick' (driver) -> 'course' -> 'race' -> 'finish' -> back to 'pick'
+  let phase = 'pick', driver = 0, stars = 0, finishToken = 0;
   let position = 0, speed = 0, goHeld = false, stopHeld = false, keyGo = false, keyStop = false;
   let light = 'red', lightT = 0, greenLeft = 0, redNeedsStop = false, redHoldT = 0, remindT = 0, starGiven = false, parkedT = 0;
-  let leftGrid = false, skyOff = 0, frameNo = 0, raf = 0, lastT = 0, celebrateT = 0;
+  let leftGrid = false, skyOff = 0, frameNo = 0, raf = 0, lastT = 0, celebrateT = 0, finishBounce = 0;
   let friends = [], carSegs = [], parts = [];
+  let skyGrad = null, skyGradKey = '';
   let kartFx = { sel: 0, blinkT: 2, ph: Math.random() * 6 };
   let pickPointer = null;
   const engine = audio.engine();
@@ -99,7 +124,6 @@ function createGame(container, { audio, hud }) {
   const crossed = (prev, now, mark) => wrapRel(prev - mark) < 0 && wrapRel(now - mark) >= 0;
 
   // ---------- Sizing ----------
-  let skyGrad = null, skyGradKey = '';
   function resize() {
     const r = root.getBoundingClientRect();
     W = r.width; H = r.height;
@@ -113,6 +137,7 @@ function createGame(container, { audio, hud }) {
     kartY = Math.max(horizonY + 120, controlsTop - 14);
     kartDz = (DEPTH * CAM_H * K) / (kartY - horizonY);
     skyGradKey = '';
+    if (phase === 'course') drawCoursePreviews();
   }
   const ro = new ResizeObserver(() => resize());
   ro.observe(root);
@@ -189,18 +214,68 @@ function createGame(container, { audio, hud }) {
     pickers[i].sel = 1;
     audio.connect(4); audio.connect(7);
     buzz(15);
+    later(() => showCourses(), 650);
+  }
+
+  // ---------- Course picker ----------
+  const courseBtns = COURSES.map((course, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'kart-course-btn';
+    b.setAttribute('aria-label', course.label.replace('!', ''));
+    b.innerHTML = `<canvas></canvas><span>${course.name}</span>`;
+    courseGrid.appendChild(b);
+    on(b, 'click', () => chooseCourse(i));
+    return { b, cv: b.querySelector('canvas') };
+  });
+
+  function drawCoursePreviews() {
+    courseBtns.forEach(({ cv }, i) => {
+      const w = cv.clientWidth, h = cv.clientHeight;
+      if (!w || !h) return;
+      cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+      const c = cv.getContext('2d');
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawCoursePreview(c, w, h, COURSES[i]);
+      // the chosen driver, ready to go
+      const R = Math.min(w, h) * 0.13;
+      drawCharacter(c, w / 2, h * 0.8, R, { color: driver, look: { x: 0, y: -0.6 } });
+    });
+  }
+
+  function showCourses() {
+    pickEl.hidden = true;
+    coursesEl.hidden = false;
+    courseBtns.forEach(({ b }) => b.classList.remove('chosen'));
+    phase = 'course';
+    drawCoursePreviews();
+  }
+
+  function chooseCourse(i) {
+    if (phase !== 'course') return;
+    audio.init();
+    phase = 'courseChosen';
+    courseBtns[i].b.classList.add('chosen');
+    audio.connect(5); audio.connect(9);
+    buzz(15);
+    loadCourse(i);
     later(() => startRace(), 650);
   }
 
   // ---------- Race ----------
   function startRace() {
-    pickEl.hidden = true;
+    coursesEl.hidden = true;
     root.classList.remove('picking');
     controls.hidden = false;
     resize();
     phase = 'race';
     position = ((L - kartDz - SEG_LEN * 4) % L + L) % L; // just behind the start gate
     speed = 0;
+    stars = 0; scoreNum.textContent = '0';
+    leftGrid = false; parts = []; words.replaceChildren();
+    goHeld = stopHeld = keyGo = keyStop = false;
+    starGiven = false; parkedT = 0;
+    floatWord(COURSES[courseIdx].label, '#FFC93C');
     const others = DOT_COLORS.map((_, i) => i).filter((i) => i !== driver).sort(() => Math.random() - 0.5).slice(0, FRIENDS);
     const playerZ = position + kartDz;
     friends = others.map((color, k) => ({
@@ -257,16 +332,66 @@ function createGame(container, { audio, hud }) {
   }
 
   function newLap() {
-    if (!leftGrid) { leftGrid = true; return; } // the first time through the gate is the start, not a lap
-    laps++;
-    if (laps % LAPS_PER_WORLD === 0) {
-      worldIdx = (worldIdx + 1) % WORLDS.length;
-      skyGradKey = '';
-      floatWord(WORLDS[worldIdx].label, '#FFC93C');
-      audio.jingle();
-      buzz([40, 60, 40]);
-      celebrateT = 1.2;
-    }
+    if (!leftGrid) { leftGrid = true; return; } // the first time through the gate is the start
+    finishRace();
+  }
+
+  // ---------- Finish ----------
+  function finishRace() {
+    phase = 'finish';
+    root.classList.add('picking');           // hide the traffic light and glow
+    controls.hidden = true;
+    goHeld = stopHeld = keyGo = keyStop = false;
+    goBtn.classList.remove('down', 'kart-nudge'); stopBtn.classList.remove('down', 'kart-nudge');
+    glowEl.classList.remove('moving-on-red');
+    light = 'green';                         // friends drive on past
+    for (const f of friends) f.wait = 0;
+    audio.jingle();
+    later(() => audio.cheer(), 450);
+    buzz([40, 60, 40, 60, 80]);
+    celebrateT = 1.2;
+    kartFx.sel = 1;
+    const token = ++finishToken;
+    later(() => {
+      if (token !== finishToken) return;
+      finishStars.textContent = stars;
+      finishEl.hidden = false;
+      finishBounce = 0;
+    }, 1300);
+    later(() => { if (token === finishToken) backToStart(); }, 1300 + FINISH_CARD_S * 1000);
+  }
+  on(finishCard, 'click', () => { if (phase === 'finish' && !finishEl.hidden) backToStart(); });
+
+  function backToStart() {
+    finishToken++;
+    finishEl.hidden = true;
+    engine.quiet();
+    phase = 'pick';
+    friends = [];
+    for (const s of carSegs) s.cars.length = 0;
+    carSegs = [];
+    pickers.forEach((p) => (p.sel = 0));
+    pickEl.hidden = false;
+    audio.swoosh();
+  }
+
+  function drawFinishFace(t, dt) {
+    const size = finishFace.clientWidth;
+    if (!size) return;
+    const px = Math.round(size * dpr);
+    if (finishFace.width !== px) finishFace.width = finishFace.height = px;
+    const c = finishFace.getContext('2d');
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.clearRect(0, 0, size, size);
+    finishBounce += dt;
+    const R = size * 0.3;
+    const hop = reduceMotion ? 0 : Math.abs(Math.sin(finishBounce * 3.4)); // happy little hops
+    const land = reduceMotion ? 0 : Math.max(0, 1 - hop * 6);               // squash just as it lands
+    c.fillStyle = 'rgba(20,30,60,.12)';
+    c.beginPath(); c.ellipse(size / 2, size * 0.86, R * (0.8 - hop * 0.25), R * 0.16, 0, 0, 7); c.fill();
+    drawCharacter(c, size / 2, size * 0.86 - R - hop * size * 0.14, R, {
+      color: driver, mood: 'happy', mouth: 'smile', shadow: false, sx: 1 + land * 0.12, sy: 1 - land * 0.12,
+    });
   }
 
   // ---------- Particles ----------
@@ -286,6 +411,7 @@ function createGame(container, { audio, hud }) {
   function update(dt, t) {
     frameNo++;
     if (phase === 'race') updateRace(dt, t);
+    else if (phase === 'finish') updateFinish(dt);
 
     if (celebrateT > 0) {
       const before = celebrateT; celebrateT -= dt;
@@ -302,6 +428,34 @@ function createGame(container, { audio, hud }) {
     parts = parts.filter((p) => p.life > 0);
     kartFx.sel = Math.max(0, kartFx.sel - dt * 2);
     kartFx.blinkT -= dt; if (kartFx.blinkT < 0) kartFx.blinkT = rand(1.5, 5);
+  }
+
+  function updateFinish(dt) {
+    speed = Math.max(0, speed - BRAKE * 0.35 * dt);   // roll gently to a stop past the line
+    position = (position + speed * dt) % L;
+    updateFriends(dt, position + kartDz);
+    engine.set(speed / MAX_SPEED);
+  }
+
+  function updateFriends(dt, playerZ) {
+    for (const s of carSegs) s.cars.length = 0;
+    carSegs = [];
+    for (const f of friends) {
+      let target = 0;
+      if (light === 'green') { f.wait -= dt; target = f.wait > 0 ? 0 : f.cruise; }
+      else if (light === 'yellow') target = f.cruise * 0.55;
+      const rel = wrapRel(f.z - playerZ);
+      if (target > 0 && rel < -3000) target *= 1.7;       // far behind: catch up
+      if (target > 0 && rel > 16000) target *= 0.45;      // far ahead: wait for us
+      const acc = target > f.speed ? ACCEL * 0.7 : (light === 'red' ? BRAKE * 0.6 : COAST * 1.5);
+      f.speed += Math.max(-acc * dt, Math.min(acc * dt, target - f.speed));
+      if (f.speed < 5 && target === 0) f.speed = 0;
+      f.z = (f.z + f.speed * dt) % L;
+      f.blinkT -= dt; if (f.blinkT < 0) f.blinkT = rand(1.5, 5);
+      const s = segAt(f.z);
+      s.cars.push(f); carSegs.push(s);
+    }
+
   }
 
   function updateRace(dt, t) {
@@ -356,24 +510,7 @@ function createGame(container, { audio, hud }) {
     stopBtn.classList.toggle('kart-nudge', light === 'red' && lightT <= 0 && speed > 0 && !brake);
     glowEl.classList.toggle('moving-on-red', light === 'red' && lightT <= 0 && speed > 0);
 
-    // friends
-    for (const s of carSegs) s.cars.length = 0;
-    carSegs = [];
-    for (const f of friends) {
-      let target = 0;
-      if (light === 'green') { f.wait -= dt; target = f.wait > 0 ? 0 : f.cruise; }
-      else if (light === 'yellow') target = f.cruise * 0.55;
-      const rel = wrapRel(f.z - playerZ);
-      if (target > 0 && rel < -3000) target *= 1.7;       // far behind: catch up
-      if (target > 0 && rel > 16000) target *= 0.45;      // far ahead: wait for us
-      const acc = target > f.speed ? ACCEL * 0.7 : (light === 'red' ? BRAKE * 0.6 : COAST * 1.5);
-      f.speed += Math.max(-acc * dt, Math.min(acc * dt, target - f.speed));
-      if (f.speed < 5 && target === 0) f.speed = 0;
-      f.z = (f.z + f.speed * dt) % L;
-      f.blinkT -= dt; if (f.blinkT < 0) f.blinkT = rand(1.5, 5);
-      const s = segAt(f.z);
-      s.cars.push(f); carSegs.push(s);
-    }
+    updateFriends(dt, playerZ);
 
     // engine + exhaust
     engine.set(speed / MAX_SPEED);
@@ -401,7 +538,7 @@ function createGame(container, { audio, hud }) {
   }
 
   function drawBackground(world, t) {
-    const key = worldIdx + ':' + H + ':' + horizonY;
+    const key = courseIdx + ':' + H + ':' + horizonY;
     if (key !== skyGradKey) {
       skyGrad = ctx.createLinearGradient(0, 0, 0, horizonY);
       skyGrad.addColorStop(0, world.sky[0]); skyGrad.addColorStop(1, world.sky[1]);
@@ -536,12 +673,12 @@ function createGame(container, { audio, hud }) {
   }
 
   function drawPlayer(t, pSeg) {
-    if (phase !== 'race') return;
+    if (phase !== 'race' && phase !== 'finish') return;
     const w = KART_W * (DEPTH / kartDz) * K;
     const v = speed / MAX_SPEED;
     const brake = stopHeld || keyStop;
     let mood = 'normal';
-    if (kartFx.sel > 0 || (light !== 'green' && speed === 0 && starGiven)) mood = 'happy';
+    if (phase === 'finish' || kartFx.sel > 0 || (light !== 'green' && speed === 0 && starGiven)) mood = 'happy';
     else if ((light === 'red' && lightT <= 0 && speed > 0) || (brake && v > 0.35)) mood = 'surprised'; // uh-oh!
     else if (v > 0.6) mood = 'excited';
     const shake = reduceMotion ? 0 : Math.sin(t * 22) * v * w * 0.012;
@@ -629,12 +766,13 @@ function createGame(container, { audio, hud }) {
 
   function draw(t) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const world = WORLDS[worldIdx];
+    const world = COURSES[courseIdx];
     drawBackground(world, t);
     drawRoad(world, t);
     if (world.snow && !reduceMotion) drawSnow(t);
     drawParts();
-    meter.style.width = phase === 'race' && leftGrid ? ((((position + kartDz - GATE_Z) % L) + L) % L / L * 100) + '%' : '0%';
+    meter.style.width = phase === 'finish' ? '100%'
+      : phase === 'race' && leftGrid ? ((((position + kartDz - GATE_Z) % L) + L) % L / L * 100) + '%' : '0%';
   }
 
   // ---------- Loop ----------
@@ -644,10 +782,12 @@ function createGame(container, { audio, hud }) {
     const t = now / 1000;
     update(dt, t);
     draw(t);
-    if (phase !== 'race') drawPickers(t, dt);
+    if (phase === 'pick' || phase === 'chosen') drawPickers(t, dt);
+    else if (phase === 'finish' && !finishEl.hidden) drawFinishFace(t, dt);
     raf = requestAnimationFrame(frame);
   }
 
+  loadCourse(0);
   resize();
   position = ((L - kartDz - SEG_LEN * 4) % L + L) % L;
   audio.jingle();

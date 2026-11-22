@@ -111,7 +111,8 @@ class Audio {
   squeak() { this.tone(1400, 0.16, 'sine', 0.035, 0, 900); }
 
   /**
-   * A continuous, soft engine hum. Returns { set(speed01), stop() }.
+   * A continuous, soft engine hum. Returns { set(speed01), quiet(), stop() }.
+   * quiet() silences it until the next set(); stop() ends it for good.
    * Respects mute; restarts itself if it was silenced by stopAll() or muting.
    */
   engine() {
@@ -156,6 +157,7 @@ class Audio {
         nodes.lp.frequency.setTargetAtTime(380 + v * 700, t, 0.1);
         nodes.out.gain.setTargetAtTime(0.018 + v * 0.05, t, 0.08);
       },
+      quiet: () => kill(),
       stop: () => { stopped = true; kill(); },
     };
   }
