@@ -30,12 +30,12 @@ function renderTiles() {
     b.addEventListener('click', () => openGame(g));
     tiles.appendChild(b);
   }
-  if (GAMES.length % 2 === 1) {
-    const soon = document.createElement('div');
-    soon.className = 'tile soon';
-    soon.innerHTML = 'More games<br>coming soon';
-    tiles.appendChild(soon);
-  }
+  // Always end with a "coming soon" placeholder. If it would sit alone on its row, make it a full-width banner.
+  const soon = document.createElement('div');
+  const alone = GAMES.length % 2 === 0;
+  soon.className = alone ? 'tile soon wide' : 'tile soon';
+  soon.innerHTML = alone ? 'More games coming soon' : 'More games<br>coming soon';
+  tiles.appendChild(soon);
 }
 
 // ---------- Mute ----------

@@ -71,7 +71,7 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 .brand b:nth-of-type(5n+1){color:#FF4D6D}.brand b:nth-of-type(5n+2){color:#3A86FF}
 .brand b:nth-of-type(5n+3){color:#E0A800}.brand b:nth-of-type(5n+4){color:#2EC27E}
 .brand b:nth-of-type(5n+5){color:#9D4EDD}
-.home-main{flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:22px}
+.home-main{flex:1;min-height:0;overflow-y:auto;margin:0 -16px;padding:8px 16px 28px;display:flex;flex-direction:column;justify-content:safe center;align-items:center;gap:22px}
 .hello{margin:0;font-size:22px;font-weight:500;color:var(--ink-soft)}
 .tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;width:min(100%,460px)}
 .tile{aspect-ratio:1;max-width:100%;border-radius:30px;border:0;background:var(--tile);
@@ -87,6 +87,7 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
 .tile.soon{background:transparent;border:3px dashed rgba(29,35,64,.18);box-shadow:none;color:var(--ink-soft);
   font-size:17px;font-weight:500;cursor:default;text-align:center}
 .tile.soon:active{transform:none}
+.tile.soon.wide{grid-column:1/-1;aspect-ratio:auto;padding:20px 12px}
 
 /* ---------- Round buttons (mute, exit) ---------- */
 .round{width:52px;height:52px;border-radius:50%;border:0;background:#fff;display:grid;place-items:center;padding:0;
