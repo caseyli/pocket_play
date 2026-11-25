@@ -99,6 +99,14 @@ class Audio {
   /** Little "blip" used to confirm unmuting. */
   blip() { this.connect(4); }
 
+  // ---- Kitchen ----
+  /** Gentle "uh-uh" for a wrong choice. Soft and low, never a buzzer. */
+  nope() { this.tone(392, 0.12, 'sine', 0.11); this.tone(330, 0.2, 'sine', 0.11, 0.14); }
+  /** "Order up!" service bell. */
+  ding() { this.tone(1568, 0.9, 'sine', 0.09); this.tone(2349, 0.6, 'sine', 0.035); this.tone(3136, 0.3, 'sine', 0.015); }
+  /** Little two-note hello when someone arrives. */
+  hello() { this.tone(noteFreq(7), 0.14, 'triangle', 0.1); this.tone(noteFreq(10), 0.22, 'triangle', 0.1, 0.11); }
+
   // ---- Traffic lights, stars, karts ----
   lightGreen() { this.tone(noteFreq(5), 0.16, 'triangle', 0.14); this.tone(noteFreq(9), 0.3, 'triangle', 0.15, 0.12); }
   lightYellow() { this.tone(noteFreq(7), 0.35, 'sine', 0.12); this.tone(noteFreq(7) * 2, 0.15, 'sine', 0.03); }

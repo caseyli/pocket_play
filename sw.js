@@ -1,7 +1,7 @@
 // Pocket Play service worker: cache-first, everything precached on install.
 // Bump VERSION whenever any app file changes, so phones pick up the new files.
 
-const VERSION = 'v5';
+const VERSION = 'v6';
 const CACHE = `pocket-play-${VERSION}`;
 
 // Paths are relative to this file, so the app works from any subpath (e.g. /pocket-play/).
@@ -14,12 +14,16 @@ const PRECACHE = [
   'js/audio.js',
   'js/registry.js',
   'js/characters.js',
+  'js/picker.js',
   'games/dots/dots.js',
   'games/dots/dots.css',
   'games/dots/themes.js',
   'games/kart/kart.js',
   'games/kart/kart.css',
   'games/kart/track.js',
+  'games/diner/diner.js',
+  'games/diner/diner.css',
+  'games/diner/menu.js',
   'icons/icon.svg',
   'icons/icon-192.png',
   'icons/icon-512.png',

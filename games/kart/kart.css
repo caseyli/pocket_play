@@ -47,16 +47,11 @@
 .kart-btn.kart-nudge{animation:kartPulse 1s ease-in-out infinite}
 @keyframes kartPulse{50%{transform:scale(1.09)}}
 
-/* ---------- Driver picker ---------- */
+/* ---------- Overlays (course picker, finish card); the driver picker is shared, see js/picker.js ---------- */
 .kart-pick{position:absolute;inset:var(--hud-h) 0 0 0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
   padding:10px 18px calc(24px + var(--safe-b));background:rgba(220,239,255,.55)}
 .kart-pick-title{margin:0;padding:8px 22px;border-radius:999px;background:#fff;font-size:26px;font-weight:700;
   box-shadow:0 5px 0 rgba(29,35,64,.12)}
-.kart-pick-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;max-width:440px}
-.kart-pick-btn{width:min(27vw,118px);aspect-ratio:1;border:0;padding:0;border-radius:28px;background:#fff;cursor:pointer;
-  box-shadow:0 7px 0 var(--tile-edge),0 14px 24px rgba(29,60,110,.16);transition:transform .12s,box-shadow .12s}
-.kart-pick-btn:active{transform:translateY(5px);box-shadow:0 2px 0 var(--tile-edge),0 6px 12px rgba(29,60,110,.16)}
-.kart-pick-btn canvas{display:block;width:100%;height:100%}
 
 /* ---------- Course picker ---------- */
 .kart-course-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:min(100%,400px)}

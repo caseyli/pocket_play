@@ -5,7 +5,8 @@
 // Module interface: start(container, { audio, muted, hud }) and stop().
 
 import { buzz } from '../../js/audio.js';
-import { DOT_COLORS, INK, drawCharacter, idleLook, lookToward } from '../../js/characters.js';
+import { DOT_COLORS, INK, drawCharacter } from '../../js/characters.js';
+import { createCharacterPicker } from '../../js/picker.js';
 import {
   SEG_LEN, ROAD_W, LANES, DRAW_DIST, CAM_H, MAX_SPEED, ACCEL, COAST, BRAKE,
   GREEN_DRIVE_S, YELLOW_S, RED_HOLD_S, REMIND_AFTER_S, FRIENDS,
@@ -60,10 +61,6 @@ function createGame(container, { audio, hud }) {
       <button class="kart-btn kart-go" type="button" aria-label="Go"><span class="ring"><span class="face">GO
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span></span></button>
     </div>
-    <div class="kart-pick">
-      <p class="kart-pick-title">Who's driving?</p>
-      <div class="kart-pick-grid"></div>
-    </div>
     <div class="kart-pick kart-courses" hidden>
       <p class="kart-pick-title">Where to?</p>
       <div class="kart-course-grid"></div>
@@ -84,7 +81,6 @@ function createGame(container, { audio, hud }) {
   const words = root.querySelector('.kart-words');
   const controls = root.querySelector('.kart-controls');
   const goBtn = root.querySelector('.kart-go'), stopBtn = root.querySelector('.kart-stop');
-  const pickEl = root.querySelector('.kart-pick'), pickGrid = root.querySelector('.kart-pick-grid');
   const coursesEl = root.querySelector('.kart-courses'), courseGrid = root.querySelector('.kart-course-grid');
   const finishEl = root.querySelector('.kart-finish'), finishCard = root.querySelector('.kart-finish-card');
   const finishFace = root.querySelector('.kart-finish-face'), finishStars = root.querySelector('.kart-finish-stars b');
@@ -116,7 +112,6 @@ function createGame(container, { audio, hud }) {
   let friends = [], carSegs = [], parts = [];
   let skyGrad = null, skyGradKey = '';
   let kartFx = { sel: 0, blinkT: 2, ph: Math.random() * 6 };
-  let pickPointer = null;
   const engine = audio.engine();
 
   const segAt = (z) => segs[Math.floor((((z % L) + L) % L) / SEG_LEN) % N];
@@ -169,53 +164,11 @@ function createGame(container, { audio, hud }) {
   });
   on(window, 'blur', () => { keyGo = keyStop = false; });
 
-  // ---------- Driver picker ----------
-  const pickers = DOT_COLORS.map((col, i) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'kart-pick-btn';
-    b.setAttribute('aria-label', `${col.name} driver`);
-    const cv = document.createElement('canvas');
-    b.appendChild(cv);
-    pickGrid.appendChild(b);
-    on(b, 'click', () => choose(i));
-    return { b, cv, c: cv.getContext('2d'), sel: 0, blinkT: rand(0.5, 4), ph: Math.random() * 6 };
+  // ---------- Driver picker (shared) ----------
+  const picker = createCharacterPicker(root, {
+    audio, title: "Who's driving?",
+    onPick: (i) => { if (phase !== 'pick') return; driver = i; showCourses(); },
   });
-  on(pickEl, 'pointermove', (e) => { pickPointer = { x: e.clientX, y: e.clientY }; });
-  on(pickEl, 'pointerleave', () => { pickPointer = null; });
-
-  function drawPickers(t, dt) {
-    for (let i = 0; i < pickers.length; i++) {
-      const p = pickers[i];
-      const size = p.b.clientWidth;
-      if (!size) continue;
-      const px = Math.round(size * dpr);
-      if (p.cv.width !== px) { p.cv.width = p.cv.height = px; }
-      const c = p.c;
-      c.setTransform(dpr, 0, 0, dpr, 0, 0);
-      c.clearRect(0, 0, size, size);
-      p.blinkT -= dt; if (p.blinkT < 0) p.blinkT = rand(1.5, 5);
-      p.sel = Math.max(0, p.sel - dt * 2.2);
-      let sx = 1, sy = 1;
-      if (p.sel > 0) { const b = 1 + 0.3 * p.sel * Math.sin((1 - p.sel) * Math.PI * 3); sx = b; sy = 2 - b; }
-      const R = size * 0.34, cx = size / 2, cy = size * 0.47;
-      let look = idleLook(t, p.ph);
-      if (pickPointer) { const r = p.cv.getBoundingClientRect(); look = lookToward(r.left + cx, r.top + cy, pickPointer.x, pickPointer.y); }
-      const chosen = phase !== 'pick' && i === driver;
-      drawCharacter(c, cx, cy, R, { color: i, sx, sy, look, open: p.blinkT < 0.13 ? 0.12 : 1, mood: chosen ? 'happy' : 'normal', outline: chosen });
-    }
-  }
-
-  function choose(i) {
-    if (phase !== 'pick') return;
-    audio.init();
-    driver = i;
-    phase = 'chosen';
-    pickers[i].sel = 1;
-    audio.connect(4); audio.connect(7);
-    buzz(15);
-    later(() => showCourses(), 650);
-  }
 
   // ---------- Course picker ----------
   const courseBtns = COURSES.map((course, i) => {
@@ -244,7 +197,7 @@ function createGame(container, { audio, hud }) {
   }
 
   function showCourses() {
-    pickEl.hidden = true;
+    picker.hide();
     coursesEl.hidden = false;
     courseBtns.forEach(({ b }) => b.classList.remove('chosen'));
     phase = 'course';
@@ -370,8 +323,7 @@ function createGame(container, { audio, hud }) {
     friends = [];
     for (const s of carSegs) s.cars.length = 0;
     carSegs = [];
-    pickers.forEach((p) => (p.sel = 0));
-    pickEl.hidden = false;
+    picker.show();
     audio.swoosh();
   }
 
@@ -782,8 +734,7 @@ function createGame(container, { audio, hud }) {
     const t = now / 1000;
     update(dt, t);
     draw(t);
-    if (phase === 'pick' || phase === 'chosen') drawPickers(t, dt);
-    else if (phase === 'finish' && !finishEl.hidden) drawFinishFace(t, dt);
+    if (phase === 'finish' && !finishEl.hidden) drawFinishFace(t, dt);
     raf = requestAnimationFrame(frame);
   }
 
@@ -791,6 +742,7 @@ function createGame(container, { audio, hud }) {
   resize();
   position = ((L - kartDz - SEG_LEN * 4) % L + L) % L;
   audio.jingle();
+  picker.show();
   lastT = performance.now();
   raf = requestAnimationFrame(frame);
 
@@ -801,6 +753,7 @@ function createGame(container, { audio, hud }) {
       ac.abort();
       ro.disconnect();
       engine.stop();
+      picker.destroy();
       for (const id of timeouts) clearTimeout(id);
       timeouts.clear();
       friends = []; parts = []; carSegs = [];

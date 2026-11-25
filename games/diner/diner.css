@@ -1,0 +1,79 @@
+/* Dot Diner. Layout: serving window + order ticket at the top, counter with the tray in the middle,
+   shelves of big item tiles at the bottom. Colours come from the kitchen (CSS variables set in JS). */
+.diner{position:absolute;inset:0;overflow:hidden;touch-action:manipulation;color:var(--ink)}
+.diner-bg{position:absolute;inset:0;background:var(--wall-pattern),var(--wall)}
+.diner.flash .diner-bg{animation:dinerFlash .7s ease-out}
+@keyframes dinerFlash{0%{filter:brightness(1.8)}100%{filter:none}}
+.diner-layout{position:absolute;inset:0;display:flex;flex-direction:column;padding-top:var(--hud-h)}
+
+/* ---------- Window + ticket ---------- */
+.diner-top{flex:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:2px 14px 0}
+.diner-window-wrap{position:relative;width:min(60vw,280px)}
+.diner-awning{height:16px;margin:0 -10px;border-radius:10px 10px 4px 4px;
+  background:repeating-linear-gradient(90deg,var(--awning) 0 22px,#ffffff 22px 44px);box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.diner-window{height:clamp(78px,15vh,150px);border:8px solid var(--frame);border-top-width:6px;border-radius:0 0 16px 16px;
+  background:var(--view);box-shadow:inset 0 -6px 0 rgba(0,0,0,.08)}
+.diner-ticket{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px 8px;border-radius:20px;background:#fff;
+  box-shadow:0 5px 0 rgba(29,35,64,.12);min-width:180px}
+.diner-ticket.pop{animation:dinerTicket .45s cubic-bezier(.2,.9,.3,1.4)}
+@keyframes dinerTicket{from{transform:scale(.5) translateY(-20px);opacity:0}}
+.diner-ticket-name{font-size:14px;font-weight:600;color:var(--ink-soft);line-height:1.2}
+.diner-ticket-items{display:flex;gap:6px}
+.diner-need{position:relative;width:clamp(42px,12vw,54px);aspect-ratio:1}
+.diner-need svg{width:100%;height:100%;display:block}
+.diner-check{position:absolute;right:-4px;bottom:-2px;width:22px;height:22px;border-radius:50%;background:#fff;
+  box-shadow:0 0 0 2px #fff;transform:scale(0);transition:transform .25s cubic-bezier(.2,.9,.3,1.6)}
+.diner-check svg{width:100%;height:100%;display:block}
+.diner-need.done .diner-check{transform:scale(1)}
+.diner-need.done > svg{animation:dinerGot .35s ease-out}
+@keyframes dinerGot{50%{transform:scale(1.2)}}
+
+/* ---------- Counter + tray ---------- */
+.diner-counter{position:relative;flex:none;height:clamp(86px,15vh,150px);margin-top:10px}
+.diner-counter-top{position:absolute;left:0;right:0;top:32%;height:18px;background:var(--counter-top);box-shadow:0 -3px 0 rgba(0,0,0,.06)}
+.diner-counter-front{position:absolute;left:0;right:0;top:calc(32% + 18px);bottom:0;background:var(--counter);box-shadow:inset 0 6px 0 rgba(0,0,0,.08)}
+.diner-tray{position:absolute;left:50%;top:6%;transform:translateX(-50%);width:min(62vw,270px);height:44%;
+  display:flex;align-items:center;justify-content:center;gap:4px;padding:0 10px;border-radius:14px;
+  background:var(--tray);box-shadow:0 5px 0 rgba(29,35,64,.16),inset 0 -4px 0 rgba(29,35,64,.06)}
+.diner-slot{flex:1;max-width:52px;height:92%;border-radius:10px;border:2px dashed rgba(29,35,64,.12)}
+
+/* ---------- Shelves ---------- */
+.diner-shelf{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;isolation:isolate;overflow:hidden;
+  padding:12px max(12px,var(--safe-r)) max(16px,calc(var(--safe-b) + 8px)) max(12px,var(--safe-l));
+  background:linear-gradient(rgba(0,0,0,.08),transparent 14px),var(--shelf)}
+.diner-grid{display:flex;flex-direction:column;gap:clamp(14px,3vh,30px);width:min(100%,440px)}
+.diner-row{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding-bottom:12px}
+.diner-row::after{content:'';position:absolute;z-index:-1;left:-40px;right:-40px;bottom:0;height:16px;border-radius:5px;
+  background:var(--plank);box-shadow:0 6px 0 rgba(0,0,0,.14),inset 0 3px 0 rgba(255,255,255,.18)}
+.diner-item{position:relative;aspect-ratio:1/1.08;border:0;border-radius:20px;background:#fff;cursor:pointer;padding:6px 4px 4px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-family:inherit;color:var(--ink-soft);
+  box-shadow:0 5px 0 rgba(29,35,64,.16);transition:transform .1s,box-shadow .1s,background .2s;
+  animation:dinerTileIn .35s cubic-bezier(.2,.9,.3,1.3) backwards;animation-delay:var(--d,0ms)}
+.diner-item svg{width:74%;height:auto;flex:1;min-height:0}
+.diner-item span{font-size:11px;font-weight:600;line-height:1.1;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.diner-item:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(29,35,64,.16)}
+.diner-item.taken{background:rgba(255,255,255,.4);box-shadow:none;cursor:default}
+.diner-item.taken svg,.diner-item.taken span{visibility:hidden}
+.diner-item.nope{animation:dinerNope .5s ease-in-out}
+@keyframes dinerTileIn{from{transform:scale(.3);opacity:0}}
+@keyframes dinerNope{
+  0%,100%{transform:none;box-shadow:0 5px 0 rgba(29,35,64,.16)}
+  15%{transform:translateX(-7px) rotate(-4deg);box-shadow:0 0 0 4px #FF4D6D,0 5px 0 rgba(29,35,64,.16);background:#ffe3e9}
+  35%{transform:translateX(6px) rotate(3deg);box-shadow:0 0 0 4px #FF4D6D,0 5px 0 rgba(29,35,64,.16);background:#ffe3e9}
+  55%{transform:translateX(-4px) rotate(-2deg);box-shadow:0 0 0 4px #FF4D6D,0 5px 0 rgba(29,35,64,.16)}
+  75%{transform:translateX(2px)}}
+
+/* ---------- Cook, carried items, words ---------- */
+.diner-fx{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none}
+.diner-carries{position:absolute;inset:0;z-index:5;pointer-events:none}
+.diner-carry{position:absolute}
+.diner-carry svg{width:100%;height:100%;display:block}
+.diner-carry.lifted{animation:dinerLift .6s ease-in-out infinite alternate}
+@keyframes dinerLift{from{transform:translateY(0) scale(1.05)}to{transform:translateY(-8px) scale(1.1)}}
+.diner-carry.settle{transition:left .18s ease-out,top .18s ease-out,width .18s,height .18s}
+.diner-carry.serve{transition:transform .6s cubic-bezier(.5,0,.75,0),opacity .6s}
+.diner-words{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+
+@media (prefers-reduced-motion:reduce){
+  .diner-item,.diner-item.nope,.diner-ticket.pop,.diner-carry.lifted,.diner.flash .diner-bg,.diner-need.done > svg{animation:none}
+}

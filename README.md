@@ -80,8 +80,10 @@ css/app.css           shell styles
 js/app.js             view switching, hold-to-exit, back button, mute, SW registration
 js/registry.js        list of games
 js/audio.js           synthesised sounds (Web Audio), incl. the kart engine hum
-js/characters.js      the dot characters every game uses: colours, faces, moods
+js/characters.js      the dot characters every game uses: colours, faces, moods, chef hat
+js/picker.js          shared "pick your character" screen
 games/dots/           Dot Pop: dots.js (logic + rendering), dots.css, themes.js (worlds, MILESTONE)
+games/diner/          Dot Diner: diner.js (orders, fetching, kitchen), diner.css, menu.js (item art, meals, kitchens, tunables)
 games/kart/           Dot Dash: kart.js (driving, lights, rendering), kart.css, track.js (the four courses: road shape + scenery, and tunables)
 icons/                app icons (icon.svg is the source)
 og-image.png          1200×630 image shown when the link is shared

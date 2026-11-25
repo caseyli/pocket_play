@@ -34,6 +34,7 @@ export function lookToward(x, y, tx, ty) {
  *   alpha   opacity
  *   shadow  draw a ground shadow (default true)
  *   outline white outline, used for "selected" (default false)
+ *   hat     null | 'chef'
  */
 export function drawCharacter(ctx, x, y, R, o = {}) {
   const col = typeof o.color === 'number' ? DOT_COLORS[o.color] : o.color || DOT_COLORS[0];
@@ -57,6 +58,7 @@ export function drawCharacter(ctx, x, y, R, o = {}) {
   ctx.fillStyle = g;
   ctx.beginPath(); ctx.arc(0, 0, R, 0, 7); ctx.fill();
   if (o.outline) { ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = R * 0.12; ctx.stroke(); }
+  if (o.hat === 'chef') drawChefHat(ctx, R);
 
   const mouth = mood === 'surprised' ? 'o' : mood === 'excited' ? 'grin' : o.mouth || null;
   drawFace(ctx, R, mood, o.look || { x: 0, y: 0 }, o.open ?? 1, mouth);
@@ -106,4 +108,17 @@ function drawFace(ctx, R, mood, look, open, mouth) {
     ctx.fillStyle = INK;
     ctx.beginPath(); ctx.ellipse(0, R * 0.38, R * 0.1, R * 0.13, 0, 0, 7); ctx.fill();
   }
+}
+
+function drawChefHat(ctx, R) {
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath(); ctx.arc(-R * 0.36, -R * 1.22, R * 0.34, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(R * 0.36, -R * 1.22, R * 0.34, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, -R * 1.42, R * 0.4, 0, 7); ctx.fill();
+  ctx.fillRect(-R * 0.56, -R * 1.22, R * 1.12, R * 0.3);
+  // band, sitting on the head
+  ctx.fillStyle = '#e4e9f3';
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(-R * 0.6, -R * 0.98, R * 1.2, R * 0.26, R * 0.1); else ctx.rect(-R * 0.6, -R * 0.98, R * 1.2, R * 0.26);
+  ctx.fill();
 }

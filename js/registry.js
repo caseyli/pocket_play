@@ -36,6 +36,24 @@ const kartArt = `
   </g>
 </svg>`;
 
+const dinerArt = `
+<svg viewBox="0 0 120 100" aria-hidden="true">
+  <rect x="4" y="74" width="112" height="10" rx="5" fill="#e8a46a"/>
+  <ellipse cx="82" cy="72" rx="28" ry="8" fill="#cfe0ff"/><ellipse cx="82" cy="70" rx="26" ry="7" fill="#fff"/>
+  <path d="M64 66c-3-2-3-8 2-9 3-1 5 0 8 0s5-1 8 0c5 1 5 7 2 9v3H64z" fill="#d9964a"/>
+  <path d="M66 62h20v5H66z" fill="#b0254f"/>
+  <path d="M64 58c-3-2-3-8 2-9 3-1 5 0 8 0s5-1 8 0c5 1 5 7 2 9v4H64z" fill="#ffe0a3"/>
+  <g class="bob">
+    <circle cx="34" cy="56" r="17" fill="#2EC27E"/>
+    <circle cx="28" cy="53" r="4.5" fill="#fff"/><circle cx="40" cy="53" r="4.5" fill="#fff"/>
+    <circle cx="29" cy="54" r="2.3" fill="#1d2340"/><circle cx="41" cy="54" r="2.3" fill="#1d2340"/>
+    <path d="M29 62a6 6 0 0 0 10 0" stroke="#1d2340" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="28" cy="34" r="6.5" fill="#fff"/><circle cx="40" cy="34" r="6.5" fill="#fff"/><circle cx="34" cy="30" r="7.5" fill="#fff"/>
+    <rect x="23" y="34" width="22" height="7" rx="2.5" fill="#e4e9f3"/>
+  </g>
+  <path d="M104 22l2.4 5 5.4.6-4 3.7 1 5.4-4.8-2.7-4.8 2.7 1-5.4-4-3.7 5.4-.6z" fill="#FFC93C"/>
+</svg>`;
+
 export const GAMES = [
   {
     id: 'dots',
@@ -50,5 +68,12 @@ export const GAMES = [
     art: kartArt,
     module: new URL('../games/kart/kart.js', import.meta.url).href,
     styles: new URL('../games/kart/kart.css', import.meta.url).href,
+  },
+  {
+    id: 'diner',
+    name: 'Dot Diner',
+    art: dinerArt,
+    module: new URL('../games/diner/diner.js', import.meta.url).href,
+    styles: new URL('../games/diner/diner.css', import.meta.url).href,
   },
 ];
