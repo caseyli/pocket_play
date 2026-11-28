@@ -107,6 +107,12 @@ class Audio {
   /** Little two-note hello when someone arrives. */
   hello() { this.tone(noteFreq(7), 0.14, 'triangle', 0.1); this.tone(noteFreq(10), 0.22, 'triangle', 0.1, 0.11); }
 
+  // ---- Golf ----
+  /** Soft rising whoosh for a flick. */
+  flick() { this.tone(320, 0.28, 'sine', 0.09, 0, 900); this.tone(640, 0.18, 'triangle', 0.03, 0.04, 1500); }
+  /** Little plop of the ball dropping into the hole. */
+  plop() { this.tone(600, 0.12, 'sine', 0.14, 0, 180); this.tone(240, 0.18, 'sine', 0.08, 0.1, 140); }
+
   // ---- Traffic lights, stars, karts ----
   lightGreen() { this.tone(noteFreq(5), 0.16, 'triangle', 0.14); this.tone(noteFreq(9), 0.3, 'triangle', 0.15, 0.12); }
   lightYellow() { this.tone(noteFreq(7), 0.35, 'sine', 0.12); this.tone(noteFreq(7) * 2, 0.15, 'sine', 0.03); }

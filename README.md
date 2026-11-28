@@ -82,7 +82,9 @@ js/registry.js        list of games
 js/audio.js           synthesised sounds (Web Audio), incl. the kart engine hum
 js/characters.js      the dot characters every game uses: colours, faces, moods, chef hat
 js/picker.js          shared "pick your character" screen
+js/scenery.js         shared outdoor scenery: trees, palms, lamps... (Dot Dash, Dot Golf)
 games/dots/           Dot Pop: dots.js (logic + rendering), dots.css, themes.js (worlds, MILESTONE)
+games/golf/           Dot Golf: golf.js (flick, ball flight, scoring, drawing), golf.css, courses.js (rings, flick tuning, courses)
 games/diner/          Dot Diner: diner.js (orders, fetching, kitchen), diner.css, menu.js (item art, meals, kitchens, tunables)
 games/kart/           Dot Dash: kart.js (driving, lights, rendering), kart.css, track.js (the four courses: road shape + scenery, and tunables)
 icons/                app icons (icon.svg is the source)

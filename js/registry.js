@@ -54,6 +54,23 @@ const dinerArt = `
   <path d="M104 22l2.4 5 5.4.6-4 3.7 1 5.4-4.8-2.7-4.8 2.7 1-5.4-4-3.7 5.4-.6z" fill="#FFC93C"/>
 </svg>`;
 
+const golfArt = `
+<svg viewBox="0 0 120 100" aria-hidden="true">
+  <ellipse cx="66" cy="62" rx="50" ry="17" fill="#FF4D6D" opacity=".38"/>
+  <ellipse cx="66" cy="62" rx="38" ry="13" fill="#2EC27E" opacity=".25"/>
+  <ellipse cx="66" cy="62" rx="27" ry="9" fill="#FF4D6D" opacity=".38"/>
+  <ellipse cx="66" cy="62" rx="15" ry="5" fill="#fff" opacity=".9"/>
+  <ellipse cx="66" cy="62" rx="5" ry="2" fill="#1d2340"/>
+  <path d="M66 62V18" stroke="#c9ccd8" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M66 18c8 2 14 5 20 9-6 3-12 6-20 8z" fill="#FF4D6D"/>
+  <path d="M22 86c4-14 9-24 14-30" stroke="#b9d4ee" stroke-width="3" stroke-dasharray="1 6" stroke-linecap="round" fill="none"/>
+  <g class="bob">
+    <circle cx="24" cy="80" r="13" fill="#3A86FF"/>
+    <circle cx="19.5" cy="77" r="3.8" fill="#fff"/><circle cx="28.5" cy="77" r="3.8" fill="#fff"/>
+    <circle cx="20.5" cy="75.6" r="1.9" fill="#1d2340"/><circle cx="29.5" cy="75.6" r="1.9" fill="#1d2340"/>
+  </g>
+</svg>`;
+
 export const GAMES = [
   {
     id: 'dots',
@@ -75,5 +92,12 @@ export const GAMES = [
     art: dinerArt,
     module: new URL('../games/diner/diner.js', import.meta.url).href,
     styles: new URL('../games/diner/diner.css', import.meta.url).href,
+  },
+  {
+    id: 'golf',
+    name: 'Dot Golf',
+    art: golfArt,
+    module: new URL('../games/golf/golf.js', import.meta.url).href,
+    styles: new URL('../games/golf/golf.css', import.meta.url).href,
   },
 ];

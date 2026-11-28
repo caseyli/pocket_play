@@ -1,0 +1,7 @@
+/* Dot Golf. One full-screen canvas: sky, green, target rings, flag and the dot ball. Flick anywhere. */
+.golf{position:absolute;inset:0;overflow:hidden;touch-action:none;background:#7cc8ff}
+.golf-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.golf-words{position:absolute;inset:0;z-index:6;pointer-events:none;overflow:hidden}
+.golf.flash .golf-canvas{animation:golfFlash .7s ease-out}
+@keyframes golfFlash{0%{filter:brightness(1.7)}100%{filter:none}}
+@media (prefers-reduced-motion:reduce){.golf.flash .golf-canvas{animation:none}}
